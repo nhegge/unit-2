@@ -1,41 +1,37 @@
-/*Modified code from using geojson with leaflet tutorial/geog575 github
-Written by Nolan Hegge 2/19/26
-This code is meant to read in data from CO2 emissions from energy production from 1960-2023 across each State
-Data found is complied in states_cleaned_final.csv and states_cleaned_final.geojson
-Data sources: https://www.eia.gov/environment/emissions/state  and  https://developers.google.com/public-data/docs/canonical/states_csv
-*/
+/*Modified code from using geojson with leaflet tutorial/geog575 github */
+/*Written by Nolan Hegge 2/19/26*/
 
-//declare global map variable so it can be seen by all functions
+//declare map variable globally so all functions have access
 var map;
 
-//function to create the leaflet map
+//function to instantiate the Leaflet map
 function createMap(){
 
-    //create the map and center it on the united states
+    //create the map
     map = L.map('map', {
-        center: [39.5, -98.35],
-        zoom: 4
+        center: [0, 0],
+        zoom: 2
     });
 
-    //add the OSM base tilelayer
+    //add OSM base tilelayer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     }).addTo(map);
 
-    //call the getData function
+    //call getData function
     getData(map);
 };
 
-//function that retrieves the data and places it on the map (retrieving co2 emissions by state)
+//function to retrieve the data and place it on the map
 function getData(map){
-    fetch("data/states_cleaned_final.geojson")
+    fetch("data/MegaCities.geojson")
 		.then(function(response){
 			return response.json();
 		})
 		.then(function(json){
             var geojsonMarkerOptions = {
                 radius: 8,
-                fillColor: "#ff4561",
+                fillColor: "#ff7800",
                 color: "#000",
                 weight: 1,
                 opacity: 1,
