@@ -1,6 +1,5 @@
-/*Modified code from Leaflet Quick Start Guide/geog575 github */
-/*Written by Nolan Hegge 2/19/26*/
-
+/*Modified code from Leaflet Quick Start Guide/geog575 github
+Written by Nolan Hegge 2/19/26*/
 
 //create a leaflet map and set the starting view
 var map = L.map('map').setView([51.505, -0.09], 13);
