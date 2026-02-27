@@ -1,5 +1,5 @@
 /*Modified code from using geojson with leaflet tutorials/geog575 github
-Written by Nolan Hegge 2/19/26
+Written by Nolan Hegge 2/26/26
 This code is meant to read in data from CO2 emissions from energy production from 1960-2023 across each State
 Data found is complied in states_cleaned_final.csv and states_cleaned_final.geojson
 Data sources: https://www.eia.gov/environment/emissions/state  and  https://developers.google.com/public-data/docs/canonical/states_csv
@@ -155,8 +155,8 @@ function createSequenceControls(attributes){
     document.querySelector(".range-slider").step = 1;
     
     //add step buttons
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Reverse</button>');
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">Forward</button>');
+    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Last Year</button>');
+    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">Next Year</button>');
 
     //replace button content with images
     document.querySelector('#reverse').insertAdjacentHTML('beforeend',"<img src='img/reverse.png'>")
