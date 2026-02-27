@@ -1,5 +1,42 @@
-/* Stylesheet made by Nolan Hegge, 1/23/2026 */
+/* Stylesheet made by Nolan Hegge, 1/23/2026
+Modified code from using geojson with leaflet tutorials/geog575 github */
+
 #map {
-	height: 400px;
-	width: 100%;
+    height: 400px;
+    width: 70%;
+    display: inline-block;
+}
+
+.leaflet-popup-content p {
+    margin: 0.2em 0;
+}
+
+#panel {
+    width: 25%;
+    padding: 20px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    line-height: 42px;
+}
+
+.range-slider {
+    width: 55%;
+}
+
+.step {
+	width: 20%;
+}
+
+.step img {
+	width: 80%;
+}
+
+
+#forward {
+    float: right;
+}
+
+#reverse {
+    float: left;
 }
