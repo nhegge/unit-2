@@ -1,42 +1,189 @@
-/* Stylesheet made by Nolan Hegge, 1/26/2026
-Modified code from using geojson with leaflet tutorials/geog575 github */
+/* Stylesheet made by Nolan Hegge, 1/23/2026
+   Modified code from using geojson with leaflet tutorials/geog575 github
+   Color Pallette from: https://coolors.co/palette/0b090a-161a1d-660708-a4161a-ba181b-e5383b-b1a7a6-d3d3d3-f5f3f4-ffffff (Thanks Alton letting me snoop in your websites backend) */
 
+   body {
+    background-color: #0b090a;
+    color: #d3d3d3;
+    font-family: 'Trebuchet MS';
+    margin: 0;
+    padding: 0;
+    }
+
+a {
+    color: #e5383b; /*so link colors pop*/
+    }
+
+/*Header Formatting*/
+#header {
+    background-color: #0b090a;
+    border-bottom: 2px solid #e5383b;
+    padding: 14px 24px 10px;
+    }
+
+#header h1 {
+    font-family: 'Impact';
+    font-size: 1.9em;
+    color: #f5f3f4;
+    text-transform: uppercase;
+    margin: 0;
+    }
+
+#header h2 {
+    font-family: 'Impact';
+    font-size: 1em;
+    color: #e5383b;
+    margin: 2px 0 0;
+    }
+
+/*Intro paragraph Formatting*/
+#intro {
+    background-color: #161a1d;
+    padding: 12px 24px;
+    border-bottom: 1px solid #a4161a;
+    }
+
+#intro p {
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: #b1a7a6;
+    max-width: 900px;
+    margin: 0 0 6px;
+    }
+
+/*Map Formatting*/
 #map {
-    height: 400px;
-    width: 70%;
-    display: inline-block;
-}
+    height: 520px;
+    width: 100%;
+    background-color: #0b090a;
+    }
+    /*Fixes weird black line from zooming in and out seen in leaflet, common issue documented (IN DEPTH) here: https://github.com/Leaflet/Leaflet/issues/3575* and here: https://stackoverflow.com/questions/38728778/is-it-possible-to-have-a-transparent-border/*/
+    .leaflet-tile {
+        border: 1px solid transparent;
+        }    
+
+/* --- Footer --- */
+#footer {
+    background-color: #0b090a;
+    border-top: 1px solid #a4161a;
+    padding: 10px 24px;
+    }
+
+#footer p {
+    font-size: 0.78em;
+    color: #d3d3d3;
+    margin: 0;
+    }
+
+/*Sequence Control Formatting*/
+.sequence-control-container {
+    width: 300px;
+    height: 80px;
+    background-color: rgba(22,26,29,0.9);
+    padding: 8px 10px;
+    line-height: 1;
+    text-align: center;
+    border: solid #a4161a 1px;
+    }
+
+#year-label {
+    color: #d3d3d3;
+    font-size: 1em;
+    margin: 0 0 2px;
+    line-height: 1.4;
+    text-align: center;
+    }
+
+#year-label #selected-year {
+    color: #e5383b;
+    font-family: 'Impact';
+    font-size: 1.1em;
+    }
+
+.range-slider {
+    width: 200px;
+    margin: 8px 0 4px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    }
+
+.step {
+    width: 40px;
+    background-color: #161a1d;
+    border: 1px solid #a4161a;
+    cursor: pointer;
+    padding: 2px;
+    vertical-align: middle;
+    }
+
+.step:hover {
+    background-color: #e5383b;
+    border-color: #e5383b;
+    }
+
+.step img {
+    width: 100%;
+    height: auto;
+    filter: invert(1);  /*Inverted the color so they would pop out more, solid black ones were hard to see and ugly*/
+    }
+
+/*Legend Control formatting*/
+.legend-control-container {
+    background-color: rgba(22,26,29,0.9);
+    padding: 10px 14px;
+    border: solid #a4161a 1px;
+    min-width: 180px;
+    }
+
+.legendTitle {
+    color: #e5383b;
+    font-family: 'Impact';
+    font-size: 1.5em;
+    margin: 0 0 4px;
+    text-align: center;
+    }
+
+.temporalLegend span.year {
+    color: #e5383b;
+    }
+
+#attribute-legend {
+    display: block;
+    overflow: visible;
+    min-width: 200px;
+    }
+
+.legend-circle {
+    fill: #e5383b;
+    fill-opacity: 0.8;
+    stroke: #0b090a;
+    }
+
+#attribute-legend text {
+    fill: #b1a7a6;
+    font-family: 'Trebuchet MS';
+    font-size: 10px;
+    }
+
+/*Popups Formatting*/
+.leaflet-popup-content-wrapper {
+    background-color: #161a1d;
+    border: 1px solid #a4161a;
+    border-radius: 2px;
+    color: #d3d3d3;
+    }
+
+.leaflet-popup-tip {
+    background-color: #161a1d;
+    }
 
 .leaflet-popup-content p {
     margin: 0.2em 0;
-}
+    font-size: 1em;
+    }
 
-#panel {
-    width: 25%;
-    padding: 20px;
-    display: inline-block;
-    vertical-align: top;
-    text-align: center;
-    line-height: 42px;
-}
-
-.range-slider {
-    width: 55%;
-}
-
-.step {
-	width: 20%;
-}
-
-.step img {
-	width: 80%;
-}
-
-
-#forward {
-    float: right;
-}
-
-#reverse {
-    float: left;
-}
+.leaflet-popup-content b {
+    color: #e5383b;
+    font-weight: normal;
+    }

@@ -1,5 +1,5 @@
 /*Modified code from using geojson with leaflet tutorials/geog575 github
-Written by Nolan Hegge 2/26/26
+Written by Nolan Hegge 2/19/26
 This code is meant to read in data from CO2 emissions from energy production from 1960-2023 across each State
 Data found is complied in states_cleaned_final.csv and states_cleaned_final.geojson
 Data sources: https://www.eia.gov/environment/emissions/state  and  https://developers.google.com/public-data/docs/canonical/states_csv
@@ -7,7 +7,7 @@ Data sources: https://www.eia.gov/environment/emissions/state  and  https://deve
 
 //declare map variable globally so all functions have access
 var map;
-var minValue;
+var dataStats = {};
 
 //create the map
 function createMap(){
@@ -18,15 +18,15 @@ function createMap(){
     });
 
     //add OSM base tilelayer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(map);
 
     //call the getData function
     getData(map);
 };
 
-//Import GeoJSON data
+//import the GeoJSON data
 function getData(map){
     //load the data
     fetch("data/states_cleaned_final.geojson")
@@ -34,18 +34,19 @@ function getData(map){
             return response.json();
         })
         .then(function(json){
-            //calculate minimum data value
-            minValue = calculateMinValue(json);
+            //calculate data statistics
+            calcStats(json);
             //create an attributes array
             var attributes = processData(json);
             //call function to create proportional symbols
             createPropSymbols(json, attributes);
             createSequenceControls(attributes);
+            createLegend(attributes);
         })
 };
 
-//function to get the minimum value of our data
-function calculateMinValue(data){
+//calculate min, max, and mean statistics across all states and years
+function calcStats(data){
     //create empty array to store all data values
     var allValues = [];
     //loop through each state
@@ -58,18 +59,20 @@ function calculateMinValue(data){
             allValues.push(value);
         }
     }
-    //get minimum value of our array
-    var minValue = Math.min(...allValues)
-
-    return minValue;
-}
+    //get min, max, mean stats for our array
+    dataStats.min = Math.min(...allValues);
+    dataStats.max = Math.max(...allValues);
+    //calculate mean value
+    var sum = allValues.reduce(function(a, b){ return a + b; });
+    dataStats.mean = sum / allValues.length;
+};
 
 //calculate the radius of each proportional symbol
 function calcPropRadius(attValue) {
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 5;
-    //Flannery Apperance Compensation formula
-    var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius
+    var minRadius = 2;
+    //Flannery Apperance Compensation formula - https://gis.stackexchange.com/questions/444922/creating-proportional-symbols-with-leaflet
+    var radius = 1.0083 * Math.pow(attValue/dataStats.min,0.5715) * minRadius
 
     return radius;
 };
@@ -93,15 +96,27 @@ function processData(data){
     return attributes;
 };
 
+//build popup content string for a given feature and attribute
+function createPopupContent(properties, attribute){
+    //add state to popup content string
+    var popupContent = "<p><b>State:</b> " + properties.fullName + " (" + properties.state_abr + ")</p>";
+
+    //add formatted attribute to popup content string
+    var year = attribute.split("_")[1];
+    popupContent += "<p><b>CO2 Emissions in " + year + ":</b> " + properties[attribute] + " million metric tons</p>";
+
+    return popupContent;
+};
+
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes){
-    //Step 4: Assign the current attribute based on the first index of the attributes array
+    //Assign the current attribute based on the first index of the attributes array
     var attribute = attributes[0];
 
     //create marker options
     var options = {
-        fillColor: "#ff4561",
-        color: "#000",
+        fillColor: "#e5383b",
+        color: "#0b090a",
         weight: 1,
         opacity: 1,
         fillOpacity: 0.8
@@ -117,11 +132,7 @@ function pointToLayer(feature, latlng, attributes){
     var layer = L.circleMarker(latlng, options);
 
     //build popup content string
-    var popupContent = "<p><b>State:</b> " + feature.properties.fullName + " (" + feature.properties.state_abr + ")</p>";
-
-    //add formatted attribute to popup content string
-    var year = attribute.split("_")[1];
-    popupContent += "<p><b>CO2 Emissions in " + year + ":</b> " + feature.properties[attribute] + " million metric tons</p>";
+    var popupContent = createPopupContent(feature.properties, attribute);
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent, {
@@ -132,7 +143,7 @@ function pointToLayer(feature, latlng, attributes){
     return layer;
 };
 
-//Add circle markers for point features to the map
+//add circle markers for the point features to the map
 function createPropSymbols(data, attributes){
     //create a Leaflet GeoJSON layer and add it to the map
     L.geoJson(data, {
@@ -142,27 +153,44 @@ function createPropSymbols(data, attributes){
     }).addTo(map);
 };
 
-//Create new sequence controls
+//function to add the sequence controls to change the year
 function createSequenceControls(attributes){
-    //create range input element (slider)
-    var slider = "<input class='range-slider' type='range'></input>";
-    document.querySelector("#panel").insertAdjacentHTML('beforeend',slider);
-    
-    //set slider attributes
-    document.querySelector(".range-slider").max = attributes.length - 1;
-    document.querySelector(".range-slider").min = 0;
-    document.querySelector(".range-slider").value = 0;
-    document.querySelector(".range-slider").step = 1;
-    
-    //add step buttons
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Last Year</button>');
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">Next Year</button>');
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
 
-    //replace button content with images
-    document.querySelector('#reverse').insertAdjacentHTML('beforeend',"<img src='img/reverse.png'>")
-    document.querySelector('#forward').insertAdjacentHTML('beforeend',"<img src='img/forward.png'>")
+        onAdd: function(){
+            //create the control container with 'sequence-control-container' as the name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
 
-    //click listener for buttons
+            //add year label - start on 1960 as a "base year" so that users can see changes as time progresses, I also felt like this makes
+            //sense since my data only goes up to 2023 so "current year" dosen't apply to this map.
+            container.insertAdjacentHTML('beforeend', '<p id="year-label">Selected Year: <span id="selected-year">1960</span></p>');
+
+            //create a range input slider
+            container.insertAdjacentHTML('beforeend', '<input class="range-slider" type="range">');
+
+            //add step buttons (using buttons from activity 6 still)
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="reverse" title="Reverse"><img src="img/reverse.png"></button>');
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="forward" title="Forward"><img src="img/forward.png"></button>');
+
+            //disable any mouse event listeners so that map dosen't freak out while using the slider
+            L.DomEvent.disableClickPropagation(container);
+
+            return container;
+        }
+    });
+
+    map.addControl(new SequenceControl());
+
+    //set up the slider attributes
+    document.querySelector(".range-slider").max = attributes.length - 1; //2023
+    document.querySelector(".range-slider").min = 0; //1960
+    document.querySelector(".range-slider").value = 0; //start at 1960
+    document.querySelector(".range-slider").step = 1; //increase by 1 year
+
+    //create a click listener for the buttons
     document.querySelectorAll('.step').forEach(function(step){
         step.addEventListener("click", function(){
             var index = document.querySelector('.range-slider').value;
@@ -170,21 +198,24 @@ function createSequenceControls(attributes){
             //increment or decrement depending on button clicked
             if (step.id == 'forward'){
                 index++;
-                //if past the last attribute, wrap around to first attribute
+                //if past the last attribute, wrap around back to the first attribute
                 index = index > attributes.length - 1 ? 0 : index;
             } else if (step.id == 'reverse'){
                 index--;
-                //if past the first attribute, wrap around to last attribute
+                //if past the first attribute, wrap around back to last attribute
                 index = index < 0 ? attributes.length - 1 : index;
             };
 
-            //update slider
+            //update the slider as well when button is clicked
             document.querySelector('.range-slider').value = index;
 
-            //pass new attribute to update symbols
+            //update the proporitonal symbols to the current year
             updatePropSymbols(attributes[index]);
+
+            //update the "current-year"
+            document.querySelector("#selected-year").innerHTML = attributes[index].split("_")[1];
         })
-    })
+    });
 
     //input listener for slider
     document.querySelector('.range-slider').addEventListener('input', function(){
@@ -193,32 +224,84 @@ function createSequenceControls(attributes){
 
         //pass new attribute to update symbols
         updatePropSymbols(attributes[index]);
+
+        //update the "current-year"
+        document.querySelector("#selected-year").innerHTML = attributes[index].split("_")[1];
     });
 };
 
-//Resize proportional symbols according to new attribute values
+//function to resize the proportional symbols according to the yearly carbon emissions
 function updatePropSymbols(attribute){
+
+    //go through map layesr
     map.eachLayer(function(layer){
         if (layer.feature && layer.feature.properties[attribute]){
-            //access feature properties
+            //get the feature properties
             var props = layer.feature.properties;
 
-            //update each feature's radius based on new attribute values
+            //update each feature's radius based on current years carbon emissions
             var radius = calcPropRadius(props[attribute]);
             layer.setRadius(radius);
 
-            //add state to popup content string
-            var popupContent = "<p><b>State:</b> " + props.fullName + " (" + props.state_abr + ")</p>";
-
-            //add formatted attribute to popup content string
-            var year = attribute.split("_")[1];
-            popupContent += "<p><b>CO2 Emissions in " + year + ":</b> " + props[attribute] + " million metric tons</p>";
-
-            //update popup content
+            //update the popup content as well
+            var popupContent = createPopupContent(props, attribute);
             popup = layer.getPopup();
             popup.setContent(popupContent).update();
         };
     });
+};
+
+//function to create the legend
+function createLegend(attributes){
+    var LegendControl = L.Control.extend({
+        options: {
+            //put in bottom right corner away from slider
+            position: 'bottomright'
+        },
+
+        onAdd: function(){
+            //create the control container named 'legend-control-container'
+            var container = L.DomUtil.create('div', 'legend-control-container');
+
+            //add the title for the legend - orignally tracked the year but took it out as I felt it was repetative (rip 30 mins)
+            container.insertAdjacentHTML('beforeend', '<p class="legendTitle">CO<sub>2</sub> Emissions Scale</p>');
+
+            //start the attribute legend svg string
+            var svg = '<svg id="attribute-legend" width="220px" height="130px">';
+
+            //array of representative values for legend protrinal symbol sizes (originally used min/max/mean but it looked quite gross so I chose
+            //to make it just values that overall represent the range of the data while being easy to rad.)
+            var circles = [500, 200, 50];
+
+            //loop to add each circle and text to svg string
+            for (var i = 0; i < circles.length; i++){
+
+                //assign the r and cy attributes
+                var radius = calcPropRadius(circles[i]);
+                var cy = 125 - radius;
+
+                //circle string
+                svg += '<circle class="legend-circle" id="legend-' + circles[i] +
+                '" r="' + radius + '" cy="' + cy + '" fill="#e5383b" fill-opacity="0.8" stroke="#0b090a" cx="35"/>';
+
+                //make sure text is aligned top and far right of circle otherwise it was looked very crowded
+                var textY = cy - radius + 4;
+
+                //text string
+                svg += '<text id="legend-' + circles[i] + '-text" x="105" y="' + textY + '">' + circles[i] + ' mil. mt</text>';
+            };
+
+            //close svg string
+            svg += "</svg>";
+
+            //add attribute legend svg to container
+            container.insertAdjacentHTML('beforeend', svg);
+
+            return container;
+        }
+    });
+
+    map.addControl(new LegendControl());
 };
 
 document.addEventListener('DOMContentLoaded',createMap)

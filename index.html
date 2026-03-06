@@ -1,31 +1,65 @@
+<!--Code Written by Nolan Hegge, example code used from GEOG 575 and help from https://stackoverflow.com/questions/25938650/how-to-insert-superscript-characters-e-g-22-in-html-->
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width">
-            <title></title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>U.S. CO2 Emissions by State, 1960-2023</title>
+    <!--put your external stylesheet links here-->
+    <link rel="stylesheet" href="lib/leaflet/leaflet.css">
+    <link rel="stylesheet" href="css/style.css">
+    <!--[if IE<9]>
+        <link rel="stylesheet" href="css/style.ie.css">
+    <![endif]-->
+    <!--you can also place internal styles here;
+         place these within <style> tags-->
+</head>
+<body>
+    <!--page header-->
+    <div id="header">
+        <h1>U.S. CO<sub>2</sub> Emissions from Energy Production</h1>
+        <h2>Total energy emissions from each State from: 1960 to 2023</h2>
+    </div>
 
-        <!--put your external stylesheet links here-->
-        <link rel="stylesheet" href="lib/leaflet/leaflet.css">
-        <link rel="stylesheet" href="css/style.css">
-        <!--[if IE<9]>
-            <link rel="stylesheet" href="css/style.ie.css">
-        <![endif]-->
+    <!--Main paragraph/explanation of background-->
+    <div id="intro">
+        <p>
+            Global CO<sub>2</sub> emissions have long been a concern from climate scientists and environmental activists alike. The United States, to this day,
+            continues to lead the world in total CO<sub>2</sub> emissions. However, emissions in the United States are not evenly or proportionally distributed across each State.
+            Because of this, this map was created to allow users to sequence through total CO2 emissions estimates from yearly energy consumption from each State
+            (measured in million metric tons of carbon dioxide CO<sub>2</sub> emissions). 
+        </p>
+        <p>
+            Use the <strong>sequence controls</strong> (the slider/arrows) in the lower-left corner to observe CO<sub>2</sub> how emissions look each year and how they
+            have changed. Click on the red circles to retrieve detailed data on emissions for State and year.
+        </p>
+    </div>
 
-         <!--you can also place internal styles here;
-             place these within <style> tags-->
-        
-    </head>
+    <!--put your initial page content here-->
+    <div id="map"></div>
 
-    <body>
-        <!--put your initial page content here-->
-        <div id="map"></div>
-        <div id="panel"></div>
-        <!--you can also use this space for internal scripts;
+    <!--citations for data sources-->
+    <div id="footer">
+        <p>
+            <strong>Data Sources:</strong>
+            U.S. Energy Information Administration (EIA);
+            <a href="https://www.eia.gov/environment/emissions/state" target="_blank">State Energy-Related CO<sub>2</sub> Emissions</a>; 
+            Google public data
+            <a href="https://developers.google.com/public-data/docs/canonical/states_csv" target="_blank">State Center Coordinates</a>; 
+            World Resources Institute
+            <a href="https://www.wri.org/insights/history-carbon-dioxide-emissions" target="_blank">The History of Carbon Dioxide Emissions</a>;
+            UW-Madison Cartography Lab
+            <a href="https://github.com/uwcartlab/webmapping" target="_blank">Programming Resources</a>;
+            Map Designed by Nolan Hegge - GEOG 575 - University of Wisconsin - Madison - 2026 ;
+
+
+        </p>
+    </div>
+
+    <!--you can also use this space for internal scripts;
         place these within <script> tags-->
-
-        <!--put your external script links here-->
-        <script type="text/javascript" src="lib/leaflet/leaflet.js"></script>
-        <script type="text/javascript" src="js/main.js"></script>
-    </body>
+    <!--put your external script links here-->
+    <script type="text/javascript" src="lib/leaflet/leaflet.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+</body>
 </html>
