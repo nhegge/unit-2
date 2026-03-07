@@ -42,6 +42,7 @@ function getData(map){
             createPropSymbols(json, attributes);
             createSequenceControls(attributes);
             createLegend(attributes);
+            createFilterControl(attributes);
         })
 };
 
@@ -232,6 +233,9 @@ function createSequenceControls(attributes){
 
 //function to resize the proportional symbols according to the yearly carbon emissions
 function updatePropSymbols(attribute){
+    //get the current filter threshold so it stays applied when the year is changed
+    var filterSlider = document.querySelector('.filter-slider');
+    var threshold = filterSlider ? Number(filterSlider.value) : 0;
 
     //go through map layesr
     map.eachLayer(function(layer){
@@ -242,6 +246,13 @@ function updatePropSymbols(attribute){
             //update each feature's radius based on current years carbon emissions
             var radius = calcPropRadius(props[attribute]);
             layer.setRadius(radius);
+
+            //reapply filter so hidden circles stay hidden after year changes
+            if (props[attribute] < threshold){
+                layer.setStyle({ opacity: 0, fillOpacity: 0 });
+            } else {
+                layer.setStyle({ opacity: 1, fillOpacity: 0.8 });
+            };
 
             //update the popup content as well
             var popupContent = createPopupContent(props, attribute);
@@ -302,6 +313,71 @@ function createLegend(attributes){
     });
 
     map.addControl(new LegendControl());
+};
+
+//function to add a filter control that hides states below set minimum emissions threshold
+function createFilterControl(attributes){
+    var FilterControl = L.Control.extend({
+        options: {
+            //put in top right so it doesn't overlap other controls
+            position: 'topright'
+        },
+
+        onAdd: function(){
+            //create the control container named 'filter-control-container'
+            var container = L.DomUtil.create('div', 'filter-control-container');
+
+            //add filter title and threshold display label
+            container.insertAdjacentHTML('beforeend', '<p class="filterTitle">Filter by Minimum CO<sub>2</sub> Emissions</p>');
+            container.insertAdjacentHTML('beforeend', '<p id="filter-label">Showing: <span id="filter-value">0</span>+ mil. mt</p>');
+
+            //add the filter slider (range from 0 to 500 in steps of 10)
+            container.insertAdjacentHTML('beforeend', '<input class="filter-slider" type="range" min="0" max="500" step="10" value="0">');
+
+            //disable map mouse events on this container so it doesn't mess up inputs
+            L.DomEvent.disableClickPropagation(container);
+
+            return container;
+        }
+    });
+
+    map.addControl(new FilterControl());
+
+    //track current year so filter can use the right attribute
+    var currentAttribute = attributes[0];
+
+    //update currentAttribute when the time sqence slider changes
+    document.querySelector('.range-slider').addEventListener('input', function(){
+        currentAttribute = attributes[this.value];
+    });
+
+    //listen for the filter slider input
+    document.querySelector('.filter-slider').addEventListener('input', function(){
+        //get the threshold value from the filter slider
+        var threshold = Number(this.value);
+
+        //update the displayed threshold value
+        document.querySelector('#filter-value').innerHTML = threshold;
+
+        //show or hide each state circle based on threshold
+        updateFilter(currentAttribute, threshold);
+    });
+};
+
+//function to show/hide circles based on the emissions filter threshold
+function updateFilter(attribute, threshold){
+    map.eachLayer(function(layer){
+        if (layer.feature && layer.feature.properties[attribute]){
+            var value = layer.feature.properties[attribute];
+
+            //hide circle if below threshold, show if above
+            if (value < threshold){
+                layer.setStyle({ opacity: 0, fillOpacity: 0 });
+            } else {
+                layer.setStyle({ opacity: 1, fillOpacity: 0.8 });
+            };
+        };
+    });
 };
 
 document.addEventListener('DOMContentLoaded',createMap)
